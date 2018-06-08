@@ -41,7 +41,7 @@ contract("RLPReader", async () => {
         assert(result.toNumber() == str.length, `the number 1 should only take ${str.length} bytes to rlp encode`);
 
         str = '';
-        for(let i = 0; i < 1024; i++) {
+        for (let i = 0; i < 1024; i++) {
             str += 'a';
         }
         str = rlp.encode(str);
@@ -57,8 +57,20 @@ contract("RLPReader", async () => {
     });
 
     it("detects the correct about of items in a list", async () => {
+        let assertString = "Number of items in an rlp encoded list wrongly detected";
         let str = [1, 2, 3];
         let result = await helper.numItems.call(toHex(rlp.encode(str)));
-        assert(result.toNumber() == str.length, "Number of items in an rlp encoded list wrongly detected");
+        assert(result.toNumber() == str.length, result);
+
+        str = [];
+        for (let i = 0; i < 1024; i++) {
+            str.push('a');
+        }
+        result = await helper.numItems.call(toHex(rlp.encode(str)));
+        assert(result.toNumber() == str.length, result);
+
+        str = [];
+        result = await helper.numItems.call(toHex(rlp.encode(str)));
+        assert(result.toNumber() == str.length, result);
     });
 });
