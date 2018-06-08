@@ -1,6 +1,6 @@
 pragma solidity ^0.4.24;
 
-library RLP {
+library RLPReader {
     uint8 constant STRING_SHORT_START = 0x80;
     uint8 constant STRING_LONG_START  = 0xb8;
     uint8 constant LIST_SHORT_START   = 0xc0;
@@ -36,9 +36,9 @@ library RLP {
     * @param item RLP encoded list in bytes
     */
     function toList(bytes memory item) internal pure returns (RLPItem[] memory result) {
-        RLPItem memory rlpItem = toRlpItem(item);
-        require(isList(rlpItem));
+        //require(isList(item));
 
+        RLPItem memory rlpItem = toRlpItem(item);
         uint items = numItems(rlpItem);
         result = new RLPItem[](items);
 
@@ -56,10 +56,11 @@ library RLP {
     * Helpers
     */
 
-    function isList(RLPItem memory item) internal pure returns (bool) {
-        uint byte0;
-        uint memPtr = item.memPtr;
+    function isList(bytes memory item) internal pure returns (bool) {
+        uint8 byte0;
+        uint memPtr;
         assembly {
+            memPtr := add(0x20, item)
             byte0 := byte(0, mload(memPtr))
         }
 
@@ -83,7 +84,7 @@ library RLP {
 
         else if (byte0 < LIST_SHORT_START) {
             assembly {
-                let byteLen := sub(len, 0xb7) // # of bytes the actual length is
+                let byteLen := sub(byte0, 0xb7) // # of bytes the actual length is
                 memPtr := add(memPtr, 1) // skip over the first byte
                 
                 /* 32 byte word size */
@@ -98,7 +99,7 @@ library RLP {
 
         else {
             assembly {
-                let byteLen := sub(len, 0xf7)
+                let byteLen := sub(byte0, 0xf7)
                 memPtr := add(memPtr, 1)
 
                 let dataLen := div(mload(memPtr), exp(256, sub(32, byteLen))) // right shifting to the correct length
@@ -119,7 +120,7 @@ library RLP {
         return count;
     }
 
-    // @param number of bytes until the data
+    // @return number of bytes until the data
     function _payloadOffset(RLPItem memory item) internal pure returns (uint) {
         uint byte0;
         uint memPtr = item.memPtr;
