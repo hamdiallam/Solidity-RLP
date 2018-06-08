@@ -165,13 +165,32 @@ library RLPReader {
 
     /** RLPItem conversions into data types **/
     function toBoolean(RLPItem memory item) internal pure returns (bool) {
-        require(item.len == 1);
+        require(item.len == 1, "Invalid RLPItem. Booleans are encoded in 1 byte");
         uint result;
         uint memPtr = item.memPtr;
         assembly {
             result := byte(0, mload(memPtr))
         }
 
-        return result == 1 ? true : false;
+        return result == 0 ? false : true;
+    }
+
+    function toAddress(RLPItem memory item) internal pure returns (address) {
+        // 1 byte for the length prefix according to RLP spec
+        require(item.len == 21, "Invalid RLPItem. Addresses are encoded in 20 bytes");
+        
+        uint memPtr = item.memPtr + 1; // skip the length prefix
+        uint addr;
+        assembly {
+            addr := div(mload(memPtr), exp(256, 16)) // right shift 12 bytes. we want the most significant 20 bytes
+        }
+        
+        return address(addr);
+    }
+
+    function toUint(RLPItem memory item) internal pure returns (uint) {
+    }
+
+    function toBytes(RLPItem memory item) internal pure returns (bytes) {
     }
 }
