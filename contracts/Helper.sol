@@ -1,5 +1,8 @@
 pragma solidity ^0.4.24;
 
+/*
+* Used to proxy function calls to the RLPReader for testing
+*/
 import "./RLPReader.sol";
 
 contract Helper {

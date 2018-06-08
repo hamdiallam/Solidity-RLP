@@ -22,6 +22,7 @@ contract("RLPReader", async () => {
         assert(result === false, "list wrongly detected");
     });
 
+    // covers 4 different scenarios listed on the spec in addition to the nested/empty structures
     it("detects the entire byte length of an RLP item" , async () => {
         let str = [1, 2, 3];
         str = rlp.encode(str);
@@ -54,23 +55,43 @@ contract("RLPReader", async () => {
         result = await helper.testItemLength.call(toHex(str));
         assert(result.toNumber() == str.length, `string of ${len} a characters should only take ${str.length} bytes to rlp encode`);
 
+        str = [[2,3], 1]; // test nested structures
+        str = rlp.encode(str);
+        result = await helper.testItemLength.call(toHex(str));
+        assert(result.toNumber() == str.length, "Incorrect calculated rlp item byte length for nested structure");
+
+        // empty structures
+        str = [];
+        str = rlp.encode(str);
+        result = await helper.numItems.call(toHex(str));
+        assert(result.toNumber() == 0, "Incorrect calculate rlp item byte length for empty list");
+
+        str = '';
+        str = rlp.encode(str);
+        result = await helper.numItems.call(toHex(str));
+        assert(result.toNumber() == 0, "Incorrect calculate rlp item byte length for empty string");
+
     });
 
     it("detects the correct about of items in a list", async () => {
         let assertString = "Number of items in an rlp encoded list wrongly detected";
         let str = [1, 2, 3];
         let result = await helper.numItems.call(toHex(rlp.encode(str)));
-        assert(result.toNumber() == str.length, result);
+        assert(result.toNumber() == str.length, assertString);
 
         str = [];
         for (let i = 0; i < 1024; i++) {
             str.push('a');
         }
         result = await helper.numItems.call(toHex(rlp.encode(str)));
-        assert(result.toNumber() == str.length, result);
+        assert(result.toNumber() == str.length, assertString);
 
         str = [];
         result = await helper.numItems.call(toHex(rlp.encode(str)));
-        assert(result.toNumber() == str.length, result);
+        assert(result.toNumber() == str.length, assertString);
+
+        str = [[2,3], 1]; // test nested structures
+        result = await helper.numItems.call(toHex(rlp.encode(str)));
+        assert(result.toNumber() == str.length, assertString);
     });
 });

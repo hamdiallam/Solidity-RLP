@@ -162,4 +162,16 @@ library RLPReader {
             mstore(dest, or(destpart, srcpart))
         }
     }
+
+    /** RLPItem conversions into data types **/
+    function toBoolean(RLPItem memory item) internal pure returns (bool) {
+        require(item.len == 1);
+        uint result;
+        uint memPtr = item.memPtr;
+        assembly {
+            result := byte(0, mload(memPtr))
+        }
+
+        return result == 1 ? true : false;
+    }
 }
