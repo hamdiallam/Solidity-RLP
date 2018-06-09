@@ -49,6 +49,11 @@ contract Helper {
         return rlpItem.toBoolean();
     }
 
+    function bytesToString(bytes memory item) public pure returns (string) {
+        RLPReader.RLPItem memory rlpItem = item.toRlpItem();
+        return string(rlpItem.toBytes());
+    }
+
     /* custom destructuring */
     function customDestructure(bytes memory item) public pure returns (address, bool, uint) {
         // first three elements follow the return types in order. Ignore the rest

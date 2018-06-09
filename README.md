@@ -28,13 +28,13 @@ contract SomeContract {
     
     // optional way to attach library functions to these data types.
     using RLPReader for RLPReader.RLPItem;
-    using RLPRead for bytes;
+    using RLPReader for bytes;
 
     // lets assume that rlpBytes is an encoding of [[1, "nested"], 2, 0x<Address>]
     function someFunctionThatTakesAnEncodedItem(bytes memory rlpBytes) public {
         RLPReader.RLPItem[] memory ls = rlpBytes.toRlpItem().toList(); // must convert to an rlpItem first!
 
-        RLPReader.RLPItem memory item = ls[0]. // the encoding of [1, "nested"].
+        RLPReader.RLPItem memory item = ls[0] // the encoding of [1, "nested"].
         item.toList()[0].toUint() // 1
         string(item.toList()[1].toBytes) // "nested"
 

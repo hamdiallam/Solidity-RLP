@@ -92,7 +92,7 @@ contract("RLPReader", async (accounts) => {
 
     });
 
-    it("detects the correct about of items in a list", async () => {
+    it("detects the correct amount of items in a list", async () => {
         let assertString = "Number of items in an rlp encoded list wrongly detected: ";
         let str = [1, 2, 3];
         let result = await helper.numItems.call(toHex(rlp.encode(str)));
@@ -138,8 +138,12 @@ contract("RLPReader", async (accounts) => {
         assert(result[2].toNumber() == str[2], "Third element incorrectly decoded");
 
         str = [[accounts[0], 1024]];
-        result = await helper.customNestedDestructure(toHex(rlp.encode(str)));
+        result = await helper.customNestedDestructure.call(toHex(rlp.encode(str)));
         assert(result[0] == str[0][0], "Nested first element incorrectly decoded");
         assert(result[1].toNumber() == str[0][1], "Nested second element incorrectly decoded");
+
+        str = "hello";
+        result = await helper.bytesToString.call(toHex(rlp.encode(str)));
+        assert(result == str, "Incorrect conversion to a string");
     });
 });
