@@ -1,11 +1,12 @@
 # RLP decoder/reader
   Currently support for solidity **v0.4.24**  
+  Please raise issues for bugs, solidity updates. I will be monitoring the solidity changelogs and updating this package accordingly
 
-# Installation
-1. Install the dependencies `npm install solidity-rlp`.
+## Installation
+1. Install the dependencies `npm install solidity-rlp`. Make sure to install through npm for prompt updates!
 2. In the contract, `import "solidity-rlp/contracts/RLPReader.sol"`
 
-# Usage
+## Usage
 The reader contract provides an interface to first take RLP encoded bytes and convert them into the
 an internal data structure, `RLPItem` through the function, `toRlpItem(bytes)`. This data structure can then be
 destructured into the desired data types.
@@ -20,7 +21,7 @@ Transformations(All take an RLPItem as an arg):
 **Note**: The reader contract only provides only these conversion functions. All other solidity data types can be derived from
 this base. For example, a `bytes32` encoded data type is equivalent to `bytes32(toUint(RLPItem))`. Start with a uint and convert from there
 
-# Example
+## Example
 ```solidity
 import "solidity-rlp/contracts/RLPReader.sol"
 
@@ -45,6 +46,9 @@ contract SomeContract {
 ```
 
 
-# Tests
-1. `npm install`
-2
+## Tests
+1. `git clone https://github.com/hamdiallam/solidity-rlp && cd solidity-rlp`
+2. `npm install`
+3. `npm install -g truffle ganache-cli` installed globally for the dev envirnoment
+4. `truffle compile && truffle test`
+

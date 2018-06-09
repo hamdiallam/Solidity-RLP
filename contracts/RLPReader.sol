@@ -1,3 +1,7 @@
+/*
+* @author Hamdi Allam hamdi.allam97@gmail.com
+* Please reach our for any questions/concerns
+*/
 pragma solidity ^0.4.24;
 
 library RLPReader {
