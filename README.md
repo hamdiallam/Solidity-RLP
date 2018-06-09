@@ -50,5 +50,6 @@ contract SomeContract {
 1. `git clone https://github.com/hamdiallam/solidity-rlp && cd solidity-rlp`
 2. `npm install`
 3. `npm install -g truffle ganache-cli` installed globally for the dev envirnoment
+4. `ganache-cli` run in a background process or seperate terminal window.
 4. `truffle compile && truffle test`
 
