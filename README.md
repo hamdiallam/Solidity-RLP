@@ -1,13 +1,15 @@
 # RLP decoder/reader
   Currently support for solidity **v0.4.24**  
-  Please raise issues for bugs, solidity updates. I will be monitoring the solidity changelogs and updating this package accordingly
+> Please raise issues for bugs, and solidity updates. I will be monitoring the solidity changelogs and updating this package accordingly
 
 ## Installation
-1. Install the dependencies `npm install solidity-rlp`. Make sure to install through npm for prompt updates!
-2. In the contract, `import "solidity-rlp/contracts/RLPReader.sol"`
+1. `npm install solidity-rlp` in the project directory. Make sure to install through npm for prompt updates!
+2. `import "solidity-rlp/contracts/RLPReader.sol"` in the desired smart contract.
+
+_See the example smart contract below_
 
 ## Usage
-The reader contract provides an interface to first take RLP encoded bytes and convert them into the
+The reader contract provides an interface to first take RLP encoded bytes and convert them into
 an internal data structure, `RLPItem` through the function, `toRlpItem(bytes)`. This data structure can then be
 destructured into the desired data types.
 
