@@ -20,7 +20,7 @@
   "author": "Hamdi Allam",
   "license": "SEE LICENSE IN LICENSE",
   "bugs": {
-    "url": "https://github.com/hamdiallam/solidity-rlp/issues",
+    "url": "https://github.com/hamdiallam/solidity-rlp/issues"
   },
   "homepage": "https://github.com/hamdiallam/solidity-rlp#readme",
   "devDependencies": {
