@@ -115,22 +115,33 @@ contract("RLPReader", async (accounts) => {
     });
 
     it("properly handles data conversions", async () => {
-        let str = rlp.encode([1, 2, 3]).toString('hex');
+        // toBytes
+        let str = rlp.encode("0x12345abc").toString('hex');
         let result = await helper.toBytes.call("0x" + str);
-        str = str.slice(payloadOffset(str)*2); // remove '0x' and prefixes
-        assert(result == "0x"+str, "Incorrect toByte conversion");
+        str = str.slice(payloadOffset(str)*2) // remove the prefix for the offset
+        assert(result == "0x" + str, "Incorrect toBytes conversion");
 
+        str = "0x1234" + Buffer.alloc(33).toString('hex'); // 35 str total. longer than 1 evm word
+        str = rlp.encode(str).toString('hex');
+        result = await helper.toBytes.call("0x" + str);
+        str = str.slice(payloadOffset(str)*2) // remove the prefix
+        assert(result == "0x" + str, "Incorrect toBytes conversion for bytes longer than 1 evm word");
+
+        // toUint
         let num = 1024;
         result = await helper.toUint.call(toHex(rlp.encode(num)))
         assert(result == num, "Incorrect toUint conversion");
 
+        // toAddress
         str = accounts[0];
         result = await helper.toAddress.call(toHex(rlp.encode(str)));
         assert(result == str, "Incorrect toAddress conversion");
 
+        // toBoolean
         result = await helper.toBoolean.call(toHex(rlp.encode(1)));
         assert(result == true, "Incorrect toBoolean conversion");
 
+        // Mix of data types
         str = [accounts[0], 1, 10000];
         result = await helper.customDestructure.call(toHex(rlp.encode(str)));
         assert(result[0] == str[0], "First element incorrectly decoded");
@@ -142,6 +153,7 @@ contract("RLPReader", async (accounts) => {
         assert(result[0] == str[0][0], "Nested first element incorrectly decoded");
         assert(result[1].toNumber() == str[0][1], "Nested second element incorrectly decoded");
 
+        // String conversion
         str = "hello";
         result = await helper.bytesToString.call(toHex(rlp.encode(str)));
         assert(result == str, "Incorrect conversion to a string");

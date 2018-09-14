@@ -199,7 +199,7 @@ library RLPReader {
         // copy as many word sizes as possible
         for (; len >= WORD_SIZE; len -= WORD_SIZE) {
             assembly {
-                mstore(dest, mload(dest))
+                mstore(dest, mload(src))
             }
 
             src += WORD_SIZE;
