@@ -151,15 +151,9 @@ library RLPReader {
 
     function toAddress(RLPItem memory item) internal pure returns (address) {
         // 1 byte for the length prefix according to RLP spec
-        require(item.len == 21, "Invalid RLPItem. Addresses are encoded in 20 bytes");
-        
-        uint memPtr = item.memPtr + 1; // skip the length prefix
-        uint addr;
-        assembly {
-            addr := div(mload(memPtr), exp(256, 12)) // right shift 12 bytes. we want the most significant 20 bytes
-        }
-        
-        return address(addr);
+        require(item.len <= 21, "Invalid RLPItem. Addresses are encoded in 20 bytes");
+
+        return address(toUint(item));
     }
 
     function toUint(RLPItem memory item) internal pure returns (uint) {
