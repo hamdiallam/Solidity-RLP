@@ -137,6 +137,16 @@ contract("RLPReader", async (accounts) => {
         result = await helper.toAddress.call(toHex(rlp.encode(str)));
         assert(result == str, "Incorrect toAddress conversion");
 
+        // toAddress with valid short address
+        str = '0x0000106e912ae7bb1e72e9d8ff76f6252376a60e';
+        result = await helper.toAddress.call(toHex(rlp.encode(str)));
+        assert(result == str, "Incorrect toAddress conversion");
+
+        // toAddress with zero address
+        str = '0x0000000000000000000000000000000000000000';
+        result = await helper.toAddress.call(toHex(rlp.encode(str)));
+        assert(result == str, "Incorrect toAddress conversion");
+
         // toBoolean
         result = await helper.toBoolean.call(toHex(rlp.encode(1)));
         assert(result == true, "Incorrect toBoolean conversion");
