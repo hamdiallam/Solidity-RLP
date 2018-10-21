@@ -1,5 +1,6 @@
 # RLP decoder/reader
-  Currently support for solidity **v0.4.24**  
+[![Build Status](https://travis-ci.com/hamdiallam/Solidity-RLP.svg?branch=master)](https://travis-ci.com/hamdiallam/Solidity-RLP)
+Currently support for solidity **v0.4.24**  
 > Please raise issues for bugs, and solidity updates. I will be monitoring the solidity changelogs and updating this package accordingly
 
 ## Installation
