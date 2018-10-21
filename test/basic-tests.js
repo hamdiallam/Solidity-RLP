@@ -2,7 +2,12 @@ let rlp = require("rlp");
 let assert = require("chai").assert;
 let helper = artifacts.require("Helper");
 
-let toHex = (buff) => { return "0x" + buff.toString("hex") };
+let toHex = (buf) => { 
+    buf = buf.toString('hex');
+    if (buf.substring(0, 2) == "0x")
+        return buf;
+    return "0x" + buf.toString("hex");
+};
 
 let payloadOffset = (str) => {
     // predefined constants as stated in the RLP spec
@@ -46,7 +51,7 @@ contract("RLPReader", async (accounts) => {
         let str = [1, 2, 3];
         str = rlp.encode(str);
         let result = await helper.itemLength.call(toHex(str));
-        assert(result.toNumber() == str.length, `[1, 2, 3] should only take ${str.length} bytes to rlp encoded`);
+        assert(result.toNumber() == str.length, `[1, 2, 3] should only take ${str.length} bytes to rlp encode`);
 
         str = [];
         for (let i = 0; i < 1024; i++) {
@@ -167,5 +172,20 @@ contract("RLPReader", async (accounts) => {
         str = "hello";
         result = await helper.bytesToString.call(toHex(rlp.encode(str)));
         assert(result == str, "Incorrect conversion to a string");
+    });
+
+    it("correctly converts and rlpItem to it's raw byte from", async () => {
+        let str = rlp.encode([1,2,3]).toString('hex');
+
+        let result = await helper.toRlpBytes.call(toHex(str));
+        assert(toHex(str) == toHex(result), "incorrectly converted to the raw byte form");
+
+        // check nested structures
+        let nestedStr = ["something"];
+        str = rlp.encode([nestedStr, "foo"]).toString('hex');
+        nestedStr = rlp.encode(nestedStr).toString('hex');
+        result = await helper.customNestedToRlpBytes.call(toHex(str));
+        assert(toHex(result) == toHex(nestedStr),
+            "incorrectly converted nested structure to it's raw rlp bytes");
     });
 });

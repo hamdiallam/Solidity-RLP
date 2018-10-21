@@ -29,6 +29,11 @@ contract Helper {
         return rlpItem.numItems();
     }
 
+    function toRlpBytes(bytes memory item) public pure returns (bytes) {
+        RLPReader.RLPItem memory rlpItem = item.toRlpItem();
+        return rlpItem.toRlpBytes();
+    }
+
     function toBytes(bytes memory item) public pure returns (bytes) {
         RLPReader.RLPItem memory rlpItem = item.toRlpItem();
         return rlpItem.toBytes();
@@ -55,6 +60,7 @@ contract Helper {
     }
 
     /* custom destructuring */
+
     function customDestructure(bytes memory item) public pure returns (address, bool, uint) {
         // first three elements follow the return types in order. Ignore the rest
         RLPReader.RLPItem[] memory items = item.toRlpItem().toList();
@@ -65,5 +71,10 @@ contract Helper {
         RLPReader.RLPItem[] memory items = item.toRlpItem().toList();
         items = items[0].toList();
         return (items[0].toAddress(), items[1].toUint());
+    }
+
+    function customNestedToRlpBytes(bytes memory item) public pure returns (bytes) {
+        RLPReader.RLPItem[] memory items = item.toRlpItem().toList();
+        return items[0].toRlpBytes();
     }
 }

@@ -1,6 +1,6 @@
 /*
 * @author Hamdi Allam hamdi.allam97@gmail.com
-* Please reach our for any questions/concerns
+* Please reach out with any questions or concerns
 */
 pragma solidity ^0.4.24;
 
@@ -138,6 +138,19 @@ library RLPReader {
 
     /** RLPItem conversions into data types **/
 
+    // @returns raw rlp encoding in bytes
+    function toRlpBytes(RLPItem memory item) internal pure returns (bytes) {
+        bytes memory result = new bytes(item.len);
+        
+        uint ptr;
+        assembly {
+            ptr := add(0x20, result)
+        }
+
+        copy(item.memPtr, ptr, item.len);
+        return result;
+    }
+
     function toBoolean(RLPItem memory item) internal pure returns (bool) {
         require(item.len == 1, "Invalid RLPItem. Booleans are encoded in 1 byte");
         uint result;
@@ -151,7 +164,7 @@ library RLPReader {
 
     function toAddress(RLPItem memory item) internal pure returns (address) {
         // 1 byte for the length prefix according to RLP spec
-        require(item.len <= 21, "Invalid RLPItem. Addresses are encoded in 20 bytes");
+        require(item.len <= 21, "Invalid RLPItem. Addresses are encoded in 20 bytes or less");
 
         return address(toUint(item));
     }
@@ -200,7 +213,7 @@ library RLPReader {
             dest += WORD_SIZE;
         }
 
-        // left over bytes
+        // left over bytes. Mask is used to remove unwanted bytes from the word
         uint mask = 256 ** (WORD_SIZE - len) - 1;
         assembly {
             let srcpart := and(mload(src), not(mask)) // zero out src
