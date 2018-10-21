@@ -11,7 +11,7 @@
 ## 1.0.1
 
 ### Changed
-- Bugfix in `copy` that did not work properly if the length to copy was a evm word or longer
+- Bugfix in `copy` that did not work properly if the length to copy was an evm word or longer
 
 ## 1.0.0
 
