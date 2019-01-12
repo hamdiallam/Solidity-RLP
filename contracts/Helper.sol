@@ -1,4 +1,4 @@
-pragma solidity ^0.4.24;
+pragma solidity ^0.5.0;
 
 /*
 * Used to proxy function calls to the RLPReader for testing
@@ -18,23 +18,28 @@ contract Helper {
     function itemLength(bytes memory item) public pure returns (uint) {
         uint memPtr;
         assembly {
-            memPtr := add(0x20, item)
+            memPtr := add(item, 0x20)
         }
 
-        return memPtr._itemLength();
+        return _itemLength(memPtr);
+    }
+
+    function size(bytes memory item) public pure returns (uint) {
+        RLPReader.RLPItem memory rlpItem = item.toRlpItem();
+        return rlpItem.size();
     }
 
     function numItems(bytes memory item) public pure returns (uint) {
-        RLPReader.RLPItem memory rlpItem = item.toRlpItem();
-        return rlpItem.numItems();
+        RLPReader.RLPItem[] memory rlpItem = item.toRlpItem().toList();
+        return rlpItem.length;
     }
 
-    function toRlpBytes(bytes memory item) public pure returns (bytes) {
+    function toRlpBytes(bytes memory item) public pure returns (bytes memory) {
         RLPReader.RLPItem memory rlpItem = item.toRlpItem();
         return rlpItem.toRlpBytes();
     }
 
-    function toBytes(bytes memory item) public pure returns (bytes) {
+    function toBytes(bytes memory item) public pure returns (bytes memory) {
         RLPReader.RLPItem memory rlpItem = item.toRlpItem();
         return rlpItem.toBytes();
     }
@@ -54,7 +59,7 @@ contract Helper {
         return rlpItem.toBoolean();
     }
 
-    function bytesToString(bytes memory item) public pure returns (string) {
+    function bytesToString(bytes memory item) public pure returns (string memory) {
         RLPReader.RLPItem memory rlpItem = item.toRlpItem();
         return string(rlpItem.toBytes());
     }
@@ -73,8 +78,51 @@ contract Helper {
         return (items[0].toAddress(), items[1].toUint());
     }
 
-    function customNestedToRlpBytes(bytes memory item) public pure returns (bytes) {
+    function customNestedToRlpBytes(bytes memory item) public pure returns (bytes memory) {
         RLPReader.RLPItem[] memory items = item.toRlpItem().toList();
         return items[0].toRlpBytes();
+    }
+
+    /** Copied verbatim from the reader contract due to scope **/
+    uint8 constant STRING_SHORT_START = 0x80;
+    uint8 constant STRING_LONG_START  = 0xb8;
+    uint8 constant LIST_SHORT_START   = 0xc0;
+    uint8 constant LIST_LONG_START    = 0xf8;
+    function _itemLength(uint memPtr) private pure returns (uint len) {
+        uint byte0;
+        assembly {
+            byte0 := byte(0, mload(memPtr))
+        }
+
+        if (byte0 < STRING_SHORT_START)
+            return 1;
+        
+        else if (byte0 < STRING_LONG_START)
+            return byte0 - STRING_SHORT_START + 1;
+
+        else if (byte0 < LIST_SHORT_START) {
+            assembly {
+                let byteLen := sub(byte0, 0xb7) // # of bytes the actual length is
+                memPtr := add(memPtr, 1) // skip over the first byte
+                
+                /* 32 byte word size */
+                let dataLen := div(mload(memPtr), exp(256, sub(32, byteLen))) // right shifting to get the len
+                len := add(dataLen, add(byteLen, 1))
+            }
+        }
+
+        else if (byte0 < LIST_LONG_START) {
+            return byte0 - LIST_SHORT_START + 1;
+        } 
+
+        else {
+            assembly {
+                let byteLen := sub(byte0, 0xf7)
+                memPtr := add(memPtr, 1)
+
+                let dataLen := div(mload(memPtr), exp(256, sub(32, byteLen))) // right shifting to the correct length
+                len := add(dataLen, add(byteLen, 1))
+            }
+        }
     }
 }

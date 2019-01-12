@@ -9,23 +9,10 @@ let toHex = (buf) => {
     return "0x" + buf.toString("hex");
 };
 
-let payloadOffset = (str) => {
-    // predefined constants as stated in the RLP spec
-    let STRING_SHORT_START = parseInt('0x80');
-    let STRING_LONG_START = parseInt('0xb8');
-    let LIST_SHORT_START = parseInt('0xc0');
-    let LIST_LONG_START = parseInt('0xf8');
-
-    let byte0 = parseInt('0x' + str.substring(0, 2))
-    if (byte0 < STRING_SHORT_START) 
-        return 0;
-    else if(byte0 < STRING_LONG_START || (byte0 >= LIST_SHORT_START && byte0 < LIST_LONG_START))
-        return 1;
-    else if (byte0 < LIST_SHORT_START) // extra `+1` for the length of the length in bytes
-        return byte0 - (STRING_LONG_START - 1) + 1;
-    else 
-        return byte - (LIST_LONG_START - 1) + 1;
-}
+let catchError = function(promise) {
+  return promise.then(result => [null, result])
+      .catch(err => [err]);
+};
 
 contract("RLPReader", async (accounts) => {
     before(async () => {
@@ -84,17 +71,11 @@ contract("RLPReader", async (accounts) => {
         result = await helper.itemLength.call(toHex(str));
         assert(result.toNumber() == str.length, "Incorrect calculated rlp item byte length for nested structure");
 
-        // empty structures
         str = [];
         str = rlp.encode(str);
-        result = await helper.numItems.call(toHex(str));
-        assert(result.toNumber() == 0, "Incorrect calculate rlp item byte length for empty list");
-
-        str = '';
-        str = rlp.encode(str);
-        result = await helper.numItems.call(toHex(str));
-        assert(result.toNumber() == 0, "Incorrect calculate rlp item byte length for empty string");
-
+        result = await helper.itemLength.call(toHex(str));
+        // should only contain the list prefix
+        assert(result.toNumber() == 1, "Incorrect calculate rlp item byte length for empty list");
     });
 
     it("detects the correct amount of items in a list", async () => {
@@ -121,19 +102,18 @@ contract("RLPReader", async (accounts) => {
 
     it("properly handles data conversions", async () => {
         // toBytes
-        let str = rlp.encode("0x12345abc").toString('hex');
-        let result = await helper.toBytes.call("0x" + str);
-        str = str.slice(payloadOffset(str)*2) // remove the prefix for the offset
-        assert(result == "0x" + str, "Incorrect toBytes conversion");
+        let str = "0x12345abc";
+        let bytes = rlp.encode(str).toString('hex');
+        let result = await helper.toBytes.call(toHex(bytes));
+        assert(result == str, "Incorrect toBytes conversion");
 
         str = "0x1234" + Buffer.alloc(33).toString('hex'); // 35 str total. longer than 1 evm word
-        str = rlp.encode(str).toString('hex');
-        result = await helper.toBytes.call("0x" + str);
-        str = str.slice(payloadOffset(str)*2) // remove the prefix
-        assert(result == "0x" + str, "Incorrect toBytes conversion for bytes longer than 1 evm word");
+        bytes = rlp.encode(str).toString('hex');
+        result = await helper.toBytes.call(toHex(bytes));
+        assert(result == str, "Incorrect toBytes conversion for bytes longer than 1 evm word");
 
         // toUint
-        let num = 1024;
+        let num = 65537; // larger than a byte
         result = await helper.toUint.call(toHex(rlp.encode(num)))
         assert(result == num, "Incorrect toUint conversion");
 
@@ -142,22 +122,22 @@ contract("RLPReader", async (accounts) => {
         result = await helper.toAddress.call(toHex(rlp.encode(str)));
         assert(result == str, "Incorrect toAddress conversion");
 
-        // toAddress with valid short address
-        str = '0x0000106e912ae7bb1e72e9d8ff76f6252376a60e';
-        result = await helper.toAddress.call(toHex(rlp.encode(str)));
-        assert(result == str, "Incorrect toAddress conversion");
+        // toAddress with a short address
+        str = '0x0000000000000000000000000000000000000123';
+        result = await helper.toAddress.call(toHex(rlp.encode("0x123")));
+        assert(result == str, "Incorrect short address conversion");
 
         // toAddress with zero address
         str = '0x0000000000000000000000000000000000000000';
-        result = await helper.toAddress.call(toHex(rlp.encode(str)));
-        assert(result == str, "Incorrect toAddress conversion");
+        result = await helper.toAddress.call(toHex(rlp.encode("0x0")));
+        assert(result == str, "Incorrect zero short address conversion");
 
         // toBoolean
         result = await helper.toBoolean.call(toHex(rlp.encode(1)));
         assert(result == true, "Incorrect toBoolean conversion");
 
         // Mix of data types
-        str = [accounts[0], 1, 10000];
+        str = [accounts[0], 1, 65537];
         result = await helper.customDestructure.call(toHex(rlp.encode(str)));
         assert(result[0] == str[0], "First element incorrectly decoded");
         assert(result[1] == true, "Second element incorrectly decoded")
@@ -174,7 +154,7 @@ contract("RLPReader", async (accounts) => {
         assert(result == str, "Incorrect conversion to a string");
     });
 
-    it("correctly converts and rlpItem to it's raw byte from", async () => {
+    it("correctly converts an rlpItem to it's raw byte from", async () => {
         let str = rlp.encode([1,2,3]).toString('hex');
 
         let result = await helper.toRlpBytes.call(toHex(str));
@@ -187,5 +167,36 @@ contract("RLPReader", async (accounts) => {
         result = await helper.customNestedToRlpBytes.call(toHex(str));
         assert(toHex(result) == toHex(nestedStr),
             "incorrectly converted nested structure to it's raw rlp bytes");
+    });
+
+    it("catches bad input", async () => {
+        let err;
+        [err] = await catchError(helper.toBoolean(toHex(rlp.encode(256))));
+        if (!err) {
+            assert.fail(null, null, "converted a boolean larger than a byte");
+        }
+        [err] = await catchError(helper.toBoolean(toHex('')));
+        if (!err) {
+            assert.fail(null, null, "converted a boolean of empty bytes");
+        }
+
+        [err] = await catchError(helper.toAddress(toHex('')));
+        if (!err) {
+            assert.fail(null, null, "converted an address larger than 20 bytes");
+        }
+        [err] = await catchError(helper.toAddress(toHex('')));
+        if (!err) {
+            assert.fail(null, null, "converted an address of empty bytes");
+        }
+
+        [err] = await catchError(helper.toUint(toHex('')));
+        if (!err) {
+            assert.fail(null, null, "converted a uint of empty bytes");
+        }
+
+        [err] = await catchError(helper.toBytes(toHex('')));
+        if (!err) {
+            assert.fail(null, null, "converted to bytes of empty bytes");
+        }
     });
 });

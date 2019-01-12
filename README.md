@@ -1,6 +1,6 @@
 # RLP decoder/reader
 [![Build Status](https://travis-ci.com/hamdiallam/Solidity-RLP.svg?branch=master)](https://travis-ci.com/hamdiallam/Solidity-RLP)  
-Currently support for solidity **v0.4.24**  
+Currently support for solidity **v0.5.0**  
 > Please raise issues for bugs, and solidity updates. I will be monitoring the solidity changelogs and updating this package accordingly
 
 ## Installation
@@ -15,15 +15,18 @@ an internal data structure, `RLPItem` through the function, `toRlpItem(bytes)`. 
 destructured into the desired data types.
 
 Transformations(All take an RLPItem as an arg):  
-1. `toList(RLPItem)` : returns a list of RLPItems, `RLPReader.RLPItem[]`
-2. `toBytes(RLPItem)` : returns the payload in bytes
-3. `toAddress(RLPItem)` : returns the encoded address. Must be 20 bytes long.
-4. `toUint(RLPItem)` : returns the encoded uint
-5. `toBoolean(RLPItem)`: returns the encoded boolean
-6. `toRlpBytes(RLPItem)`: returns the raw rlp encoded byte form
+1. `isList(RLPItem) bool` : inidicator if the encoded data is a list
+1. `toList(RLPItem) RLPItem[]` : returns a list of RLPItems
+2. `toBytes(RLPItem) bytes` : returns the payload in bytes
+3. `toAddress(RLPItem) address` : returns the encoded address. Must be 20 bytes long.
+4. `toUint(RLPItem) uint` : returns the encoded uint
+5. `toBoolean(RLPItem) bool`: returns the encoded boolean
+6. `toRlpBytes(RLPItem) bytes `: returns the raw rlp encoded byte form
+7. `size(RLPItem) uint` : returns the byte length of the rlp item
 
 **Note**: The reader contract only provides only these conversion functions. All other solidity data types can be derived from
-this base. For example, a `bytes32` encoded data type is equivalent to `bytes32(toUint(RLPItem))`. Start with a uint and convert from there
+this base. For example, a `bytes32` encoded data type is equivalent to `bytes32(toUint(RLPItem))`. Start with a uint and convert from there.
+A string can be retrieved by `string(toBytes(RLPItem))`. See example for a sample smart contract.
 
 ## Example
 ```solidity

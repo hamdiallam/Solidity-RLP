@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.2.0
+- Upgraded contract to solidity version `v0.5.0`
+- `size(RlpItem)` returns the byte length of the rlp item
+- added checks for when the rlp item is empty.
+- More tests for the added checks
+
 ## 1.1.0
 
 ### Added
