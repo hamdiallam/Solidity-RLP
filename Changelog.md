@@ -1,8 +1,17 @@
 # Changelog
 
+
+## 1.2.1
+### Changed
+- removed error strings in `require` statements to reduce deployment gas costs for users of this reader
+
 ## 1.2.0
-- Upgraded contract to solidity version `v0.5.0`
+
+### Added
 - `size(RlpItem)` returns the byte length of the rlp item
+
+### Changed
+- Upgraded contract to solidity version `v0.5.0`
 - added checks for when the rlp item is empty.
 - More tests for the added checks
 

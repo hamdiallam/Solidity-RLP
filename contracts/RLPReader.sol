@@ -40,7 +40,7 @@ library RLPReader {
     * @param item RLP encoded list in bytes
     */
     function toList(RLPItem memory item) internal pure returns (RLPItem[] memory result) {
-        require(isList(item), "rlp encoded data is not a list");
+        require(isList(item));
 
         uint items = numItems(item);
         result = new RLPItem[](items);
@@ -87,7 +87,7 @@ library RLPReader {
 
     // any non-zero byte is considered true
     function toBoolean(RLPItem memory item) internal pure returns (bool) {
-        require(item.len == 1, "Invalid RLPItem. Booleans are encoded in 1 byte");
+        require(item.len == 1);
         uint result;
         uint memPtr = item.memPtr;
         assembly {
@@ -99,13 +99,13 @@ library RLPReader {
 
     function toAddress(RLPItem memory item) internal pure returns (address) {
         // 1 byte for the length prefix according to RLP spec
-        require(item.len <= 21, "Invalid RLPItem. Addresses are encoded in maximum 20 bytes");
+        require(item.len <= 21);
 
         return address(toUint(item));
     }
 
     function toUint(RLPItem memory item) internal pure returns (uint) {
-        require(item.len > 0, "Invalid RLPItem. no bytes to decode");
+        require(item.len > 0);
 
         uint offset = _payloadOffset(item.memPtr);
         uint len = item.len - offset;
@@ -120,7 +120,7 @@ library RLPReader {
     }
 
     function toBytes(RLPItem memory item) internal pure returns (bytes memory) {
-        require(item.len > 0, "Invalid RLPItem. no bytes to decode");
+        require(item.len > 0);
 
         uint offset = _payloadOffset(item.memPtr);
         uint len = item.len - offset; // data length
@@ -236,5 +236,4 @@ library RLPReader {
             mstore(dest, or(destpart, srcpart))
         }
     }
-
 }
