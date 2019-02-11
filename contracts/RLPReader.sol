@@ -99,13 +99,13 @@ library RLPReader {
 
     function toAddress(RLPItem memory item) internal pure returns (address) {
         // 1 byte for the length prefix according to RLP spec
-        require(item.len <= 21);
+        require(item.len == 21);
 
         return address(toUint(item));
     }
 
     function toUint(RLPItem memory item) internal pure returns (uint) {
-        require(item.len > 0);
+        require(item.len > 0 && item.len <= 32);
 
         uint offset = _payloadOffset(item.memPtr);
         uint len = item.len - offset;

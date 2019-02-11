@@ -122,16 +122,6 @@ contract("RLPReader", async (accounts) => {
         result = await helper.toAddress.call(toHex(rlp.encode(str)));
         assert(result == str, "Incorrect toAddress conversion");
 
-        // toAddress with a short address
-        str = '0x0000000000000000000000000000000000000123';
-        result = await helper.toAddress.call(toHex(rlp.encode("0x123")));
-        assert(result == str, "Incorrect short address conversion");
-
-        // toAddress with zero address
-        str = '0x0000000000000000000000000000000000000000';
-        result = await helper.toAddress.call(toHex(rlp.encode("0x0")));
-        assert(result == str, "Incorrect zero short address conversion");
-
         // toBoolean
         result = await helper.toBoolean.call(toHex(rlp.encode(1)));
         assert(result == true, "Incorrect toBoolean conversion");
@@ -180,11 +170,15 @@ contract("RLPReader", async (accounts) => {
             assert.fail(null, null, "converted a boolean of empty bytes");
         }
 
-        [err] = await catchError(helper.toAddress(toHex('')));
-        if (!err) {
+        [err] = await catchError(helper.toAddress.call(toHex(rlp.encode("0x123"))));
+        if (!err)
+            assert.fail(null, null, "converted an address less than 20 bytes");
+
+        [err] = await catchError(helper.toAddress.call(toHex(rlp.encode(accounts[0] + "1"))));
+        if (!err)
             assert.fail(null, null, "converted an address larger than 20 bytes");
-        }
-        [err] = await catchError(helper.toAddress(toHex('')));
+
+        [err] = await catchError(helper.toAddress.call(toHex('')));
         if (!err) {
             assert.fail(null, null, "converted an address of empty bytes");
         }
@@ -192,6 +186,10 @@ contract("RLPReader", async (accounts) => {
         [err] = await catchError(helper.toUint(toHex('')));
         if (!err) {
             assert.fail(null, null, "converted a uint of empty bytes");
+        }
+        [err] = await catchError(helper.toUint(toHex(Array(70).fill(0).join(''))));
+        if (!err) {
+            assert.fail(null, null, "converted a uint larger than 32 bytes");
         }
 
         [err] = await catchError(helper.toBytes(toHex('')));
