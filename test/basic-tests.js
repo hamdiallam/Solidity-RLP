@@ -108,14 +108,16 @@ contract("RLPReader", async (accounts) => {
         assert(result == str, "Incorrect toBytes conversion");
 
         str = "0x1234" + Buffer.alloc(33).toString('hex'); // 35 str total. longer than 1 evm word
-        bytes = rlp.encode(str).toString('hex');
-        result = await helper.toBytes.call(toHex(bytes));
+        result = await helper.toBytes.call(toHex(rlp.encode(str).toString('hex')));
         assert(result == str, "Incorrect toBytes conversion for bytes longer than 1 evm word");
 
         // toUint
         let num = 65537; // larger than a byte
         result = await helper.toUint.call(toHex(rlp.encode(num)))
         assert(result == num, "Incorrect toUint conversion");
+
+        result = await helper.toUint.call(toHex(rlp.encode(toHex(Array(64).fill(0).join('')))));
+        assert(result == 0, "Incorrect toUint conversion")
 
         // toAddress
         str = accounts[0];
@@ -183,11 +185,11 @@ contract("RLPReader", async (accounts) => {
             assert.fail(null, null, "converted an address of empty bytes");
         }
 
-        [err] = await catchError(helper.toUint(toHex('')));
+        [err] = await catchError(helper.toUint.call(toHex('')));
         if (!err) {
             assert.fail(null, null, "converted a uint of empty bytes");
         }
-        [err] = await catchError(helper.toUint(toHex(Array(70).fill(0).join(''))));
+        [err] = await catchError(helper.toUint.call(toHex(rlp.encode(toHex(Array(66).fill(0).join(''))))));
         if (!err) {
             assert.fail(null, null, "converted a uint larger than 32 bytes");
         }

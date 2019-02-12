@@ -105,15 +105,21 @@ library RLPReader {
     }
 
     function toUint(RLPItem memory item) internal pure returns (uint) {
-        require(item.len > 0 && item.len <= 32);
+        require(item.len > 0);
 
         uint offset = _payloadOffset(item.memPtr);
         uint len = item.len - offset;
-        uint memPtr = item.memPtr + offset;
+        require(len <= 32);
 
         uint result;
+        uint memPtr = item.memPtr + offset;
         assembly {
-            result := div(mload(memPtr), exp(256, sub(32, len))) // shift to the correct location
+            result := mload(memPtr)
+
+            // shfit to the correct location if neccesary
+            if lt(len, 32) {
+                result := div(result, exp(256, sub(32, len)))
+            }
         }
 
         return result;
