@@ -18,8 +18,8 @@ Transformations(All take an RLPItem as an arg):
 1. `isList(RLPItem) bool` : inidicator if the encoded data is a list
 1. `toList(RLPItem) RLPItem[]` : returns a list of RLPItems
 2. `toBytes(RLPItem) bytes` : returns the payload in bytes
-3. `toAddress(RLPItem) address` : returns the encoded address. Must be 20 bytes long.
-4. `toUint(RLPItem) uint` : returns the encoded uint
+3. `toAddress(RLPItem) address` : returns the encoded address. Must be exactly 20 bytes.
+4. `toUint(RLPItem) uint` : returns the encoded uint. Enforced 32 byte length cap.
 5. `toBoolean(RLPItem) bool`: returns the encoded boolean
 6. `toRlpBytes(RLPItem) bytes `: returns the raw rlp encoded byte form
 7. `size(RLPItem) uint` : returns the byte length of the rlp item

@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.2.2
+### Changed
+- `toAddress` expects a fixed 20 byte item. wil revert otherwise
+- `toUint` explicit check added to cap the encoded byte length to 32 bytes
+
+### Bugfix
+- `toUint` edge case with a 32 byte uint. Do not need to right shift if the uint is 32 bytes in length.
+right shifting caused a revert otherwise.
 
 ## 1.2.1
 ### Changed
