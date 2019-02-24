@@ -78,6 +78,19 @@ contract("RLPReader", async (accounts) => {
         assert(result.toNumber() == 1, "Incorrect calculate rlp item byte length for empty list");
     });
 
+    it("detects the payload length of encoded data", async () => {
+        let result;
+
+        result = await helper.payloadLen.call(toHex(rlp.encode(1)));
+        assert(result.toNumber() == 1, "incorrect payload length of a single byte encoding");
+
+        result = await helper.payloadLen.call(toHex(rlp.encode(toHex(Array(36).fill(0).join('')))));
+        assert(result.toNumber() == 18, "incorrect payload length of a 18 bytes");
+
+        result = await helper.payloadLen.call(toHex(rlp.encode(toHex(Array(200).fill(0).join('')))));
+        assert(result.toNumber() == 100, "incorrect payload length of a 100 bytes");
+    });
+
     it("detects the correct amount of items in a list", async () => {
         let assertString = "Number of items in an rlp encoded list wrongly detected: ";
         let str = [1, 2, 3];

@@ -1,5 +1,12 @@
 # Changelog
 
+## 2.0.0
+### Added
+- `payloadLen` returns the length of the data payload
+
+### Changed/Breaking
+- `size` to `rlpLen` returns the size of the rlp payload
+
 ## 1.2.3
 ### Added
 - `toUintStrict` strict uint conversion. Encoded data must be 32 bytes in length

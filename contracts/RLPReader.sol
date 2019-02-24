@@ -32,8 +32,15 @@ library RLPReader {
     /*
     * @param item RLP encoded bytes
     */
-    function size(RLPItem memory item) internal pure returns (uint) {
+    function rlpLen(RLPItem memory item) internal pure returns (uint) {
         return item.len;
+    }
+
+    /*
+    * @param item RLP encoded bytes
+    */
+    function payloadLen(RLPItem memory item) internal pure returns (uint) {
+        return item.len - _payloadOffset(item.memPtr);
     }
 
     /*
