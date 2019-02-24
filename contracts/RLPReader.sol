@@ -98,18 +98,17 @@ library RLPReader {
     }
 
     function toAddress(RLPItem memory item) internal pure returns (address) {
-        // 1 byte for the length prefix according to RLP spec
+        // 1 byte for the length prefix
         require(item.len == 21);
 
         return address(toUint(item));
     }
 
     function toUint(RLPItem memory item) internal pure returns (uint) {
-        require(item.len > 0);
+        require(item.len > 0 && item.len <= 33);
 
         uint offset = _payloadOffset(item.memPtr);
         uint len = item.len - offset;
-        require(len <= 32);
 
         uint result;
         uint memPtr = item.memPtr + offset;
@@ -120,6 +119,20 @@ library RLPReader {
             if lt(len, 32) {
                 result := div(result, exp(256, sub(32, len)))
             }
+        }
+
+        return result;
+    }
+
+    // enforces 32 byte length
+    function toUintStrict(RLPItem memory item) internal pure returns (uint) {
+        // one byte prefix
+        require(item.len == 33);
+
+        uint result;
+        uint memPtr = item.memPtr + 1;
+        assembly {
+            result := mload(memPtr)
         }
 
         return result;

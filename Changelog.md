@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.2.3
+### Added
+- `toUintStrict` strict uint conversion. Encoded data must be 32 bytes in length
+
 ## 1.2.2
 ### Changed
 - `toAddress` expects a fixed 20 byte item. wil revert otherwise

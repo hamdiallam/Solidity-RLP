@@ -49,6 +49,11 @@ contract Helper {
         return rlpItem.toUint();
     }
 
+    function toUintStrict(bytes memory item) public pure returns (uint) {
+        RLPReader.RLPItem memory rlpItem = item.toRlpItem();
+        return rlpItem.toUintStrict();
+    }
+
     function toAddress(bytes memory item) public pure returns (address) {
         RLPReader.RLPItem memory rlpItem = item.toRlpItem();
         return rlpItem.toAddress();

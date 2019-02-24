@@ -119,6 +119,11 @@ contract("RLPReader", async (accounts) => {
         result = await helper.toUint.call(toHex(rlp.encode(toHex(Array(64).fill(0).join('')))));
         assert(result == 0, "Incorrect toUint conversion")
 
+        // toUintStrict
+        num = Array(63).fill(0).join('') + '1';
+        result = await helper.toUint.call(toHex(rlp.encode(toHex(num))));
+        assert(result == 1, "Incorrect toUint conversion")
+
         // toAddress
         str = accounts[0];
         result = await helper.toAddress.call(toHex(rlp.encode(str)));
@@ -192,6 +197,10 @@ contract("RLPReader", async (accounts) => {
         [err] = await catchError(helper.toUint.call(toHex(rlp.encode(toHex(Array(66).fill(0).join(''))))));
         if (!err) {
             assert.fail(null, null, "converted a uint larger than 32 bytes");
+        }
+        [err] = await catchError(helper.toUintStrict.call(toHex(rlp.encode(10))));
+        if (!err) {
+            assert.fail(null, null, "converted a uint without padding to 32 bytes with strict enforcement");
         }
 
         [err] = await catchError(helper.toBytes(toHex('')));
