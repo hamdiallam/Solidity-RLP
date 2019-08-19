@@ -9,6 +9,7 @@ contract Helper {
     using RLPReader for bytes;
     using RLPReader for uint;
     using RLPReader for RLPReader.RLPItem;
+    using RLPReader for RLPReader.Iterator;
 
     function isList(bytes memory item) public pure returns (bool) {
         RLPReader.RLPItem memory rlpItem = item.toRlpItem();
@@ -72,6 +73,30 @@ contract Helper {
     function bytesToString(bytes memory item) public pure returns (string memory) {
         RLPReader.RLPItem memory rlpItem = item.toRlpItem();
         return string(rlpItem.toBytes());
+    }
+
+    function toBlockHeader(bytes memory rlpHeader) public pure returns (
+        bytes32 parentHash, bytes32 sha3Uncles, bytes32 stateRoot, bytes32 transactionsRoot, bytes32 receiptsRoot,
+        uint difficulty, uint number, uint gasLimit, uint gasUsed, uint timestamp, uint nonce) {
+
+        RLPReader.Iterator memory it = rlpHeader.toRlpItem().iterator();
+        uint idx;
+        while(it.hasNext()) {
+            if ( idx == 0 )      parentHash       = bytes32(it.next().toUint());
+            else if ( idx == 1 ) sha3Uncles       = bytes32(it.next().toUint());
+            else if ( idx == 3 ) stateRoot        = bytes32(it.next().toUint());
+            else if ( idx == 4 ) transactionsRoot = bytes32(it.next().toUint());
+            else if ( idx == 5 ) receiptsRoot     = bytes32(it.next().toUint());
+            else if ( idx == 7 ) difficulty       = it.next().toUint();
+            else if ( idx == 8 ) number           = it.next().toUint();
+            else if ( idx == 9 ) gasLimit         = it.next().toUint();
+            else if ( idx == 10 ) gasUsed         = it.next().toUint();
+            else if ( idx == 11 ) timestamp       = it.next().toUint();
+            else if ( idx == 14 ) nonce           = it.next().toUint();
+            else it.next();
+
+            idx++;
+        }
     }
 
     /* custom destructuring */
