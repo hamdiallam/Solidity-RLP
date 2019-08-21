@@ -9,12 +9,40 @@ library RLPReader {
     uint8 constant STRING_LONG_START  = 0xb8;
     uint8 constant LIST_SHORT_START   = 0xc0;
     uint8 constant LIST_LONG_START    = 0xf8;
-
     uint8 constant WORD_SIZE = 32;
 
     struct RLPItem {
         uint len;
         uint memPtr;
+    }
+
+    struct Iterator {
+        RLPItem item;   // Item that's being iterated over.
+        uint nextPtr;   // Position of the next item in the list.
+    }
+
+    /*
+    * @dev Returns the next element in the iteration. Reverts if it has not next element.
+    * @param self The iterator.
+    * @return The next element in the iteration.
+    */
+    function next(Iterator memory self) internal pure returns (RLPItem memory subItem) {
+        require(hasNext(self));
+        uint ptr = self.nextPtr;
+        uint itemLength = _itemLength(ptr);
+        subItem.memPtr = ptr;
+        subItem.len = itemLength;
+        self.nextPtr = ptr + itemLength;
+    }
+
+    /*
+    * @dev Returns true if the iteration has more elements.
+    * @param self The iterator.
+    * @return true if the iteration has more elements.
+    */
+    function hasNext(Iterator memory self) internal pure returns (bool) {
+        RLPItem memory item = self.item;
+        return self.nextPtr < item.memPtr + item.len;
     }
 
     /*
@@ -27,6 +55,18 @@ library RLPReader {
         }
 
         return RLPItem(item.length, memPtr);
+    }
+
+    /*
+    * @dev Create an iterator. Reverts if item is not a list.
+    * @param self The RLP item.
+    * @return An 'Iterator' over the item.
+    */
+    function iterator(RLPItem memory self) internal pure returns (Iterator memory it) {
+        require(isList(self));
+        uint ptr = self.memPtr + _payloadOffset(self.memPtr);
+        it.item = self;
+        it.nextPtr = ptr;
     }
 
     /*

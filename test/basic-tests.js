@@ -14,6 +14,26 @@ let catchError = function(promise) {
       .catch(err => [err]);
 };
 
+let toRLPHeader = (block) => {
+    return rlp.encode([
+        block.parentHash,
+        block.sha3Uncles,
+        block.miner,
+        block.stateRoot,
+        block.transactionsRoot,
+        block.receiptsRoot,
+        block.logsBloom,
+        new web3.utils.BN(block.difficulty),
+        new web3.utils.BN(block.number),
+        block.gasLimit,
+        block.gasUsed,
+        block.timestamp,
+        block.extraData,
+        block.mixHash,
+        block.nonce,
+    ]);
+};
+
 contract("RLPReader", async (accounts) => {
     before(async () => {
         helper = await helper.deployed();
@@ -220,5 +240,41 @@ contract("RLPReader", async (accounts) => {
         if (!err) {
             assert.fail(null, null, "converted to bytes of empty bytes");
         }
+    });
+
+    it("correctly iterates over an RLP list (e.g., an RLP encoded block header)", async () => {
+        // Block 8000000 from the Ethereum main net with a couple of fields omitted
+        const block = {
+            parentHash: '0x487e074bba7f0749950d7e2f226307c8ac388cb0410cfe817931a5a44077e159',
+            sha3Uncles: '0x1dcc4de8dec75d7aab85b567b6ccd41ad312451b948a7413f0a142fd40d49347',
+            stateRoot: '0x7b814195793c699d345339dd7a4225112ad91b9ba7f03787563a9e98ba692e52',
+            transactionsRoot: '0xad6c9f611dfdd446855cb430b8392e20538db4f0349336063e710c6c483e9e43',
+            receiptsRoot: '0xf022ddad6e90316614df496922cb73508a9abecfda2d3076a5f1129a01497869',
+            difficulty: '2037888242889388',
+            number: 8000000,
+            extraData: '0x5050594520737061726b706f6f6c2d6574682d636e2d687a',
+            gasLimit: 8002255,
+            gasUsed: 7985243,
+            timestamp: 1561100149,
+            nonce: '0x00daa7b00156a516',
+            hash: '0x4e454b49dc8a2e2a229e0ce911e9fd4d2aa647de4cf6e0df40cf71bff7283330',
+            logsBloom: '0xc29754f51412a148104c6716000a3084218a2c2eb411080f0204cc2000182520544cd8896089451840a4c3d492209909825614420c21350104e0a81810b82018838f088200f3022616869299810060089f08291289c920ea25d1006460513529851001477aa905491218501179c40b01348430400ad167600e0141344140022135a01484482520131c40141583050710042168c050220010c1c443f2291b41688340084524418d0048b1328844438630c88000940524800c4001202a1540b00498350932001812960220043b200016c02cf06433548b5100429220aa00423421e25121330b410051204098d8406a600b3610403d208c8381c51bd15a9dc30004',
+            miner: '0x5A0b54D5dc17e0AadC383d2db43B0a0D3E029c4c',
+            mixHash: '0x8a24dc2c8fb497ff40a622173d9c7804a274de3da4b335b2ba0e3c53e3fae714',
+            totalDifficulty: '10690776258913596267754',
+        };
+        const rlpHeader = toRLPHeader(block);
+        const result = await helper.toBlockHeader(rlpHeader, {});
+        assert(result.parentHash == block.parentHash, "parentHash not equal");
+        assert(result.sha3Uncles == block.sha3Uncles, "sha3Uncles not equal");
+        assert(result.stateRoot  == block.stateRoot,  "stateRoot not equal");
+        assert(result.transactionsRoot == block.transactionsRoot, "transactionsRoot not equal");
+        assert(result.receiptsRoot == block.receiptsRoot, "receiptsRoot not equal");
+        assert(result.difficulty == block.difficulty, "difficulty not equal");
+        assert(result.number == block.number, "number not equal");
+        assert(result.gasLimit == block.gasLimit, "gasLimit not equal");
+        assert(result.gasUsed == block.gasUsed, "gasUsed not equal");
+        assert(result.timestamp == block.timestamp, "timestamp not equal");
+        assert(result.nonce.toString() == web3.utils.toBN(block.nonce).toString(), "nonce not equal");
     });
 });
