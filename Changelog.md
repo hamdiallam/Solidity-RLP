@@ -4,7 +4,7 @@
 ### Added
 - `iterator(RLPItem)` returns an iterator object over an rlp encoded list
 - `hasNext(Iterator)` returns a boolean if the iterator has an item to iterate on next
--` next(Iterator) returns (RLPItem)` returns an RLPItem of the next item up for iteration
+- `next(Iterator) returns (RLPItem)` returns an RLPItem of the next item up for iteration
 
 ## 2.0.0
 ### Added
