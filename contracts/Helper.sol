@@ -75,6 +75,20 @@ contract Helper {
         return string(rlpItem.toBytes());
     }
 
+    function toIterator(bytes memory item) public pure {
+        // we just care that this does not revert
+        item.toRlpItem().iterator();
+    }
+
+    // expects [[sublist],... ]
+    function nestedIteration(bytes memory item) public pure {
+        RLPReader.Iterator memory iter = item.toRlpItem().iterator();
+        RLPReader.RLPItem memory subList = iter.next();
+
+        // we just care that this doesn't revert
+        subList.iterator();
+    }
+
     function toBlockHeader(bytes memory rlpHeader) public pure returns (
         bytes32 parentHash, bytes32 sha3Uncles, bytes32 stateRoot, bytes32 transactionsRoot, bytes32 receiptsRoot,
         uint difficulty, uint number, uint gasLimit, uint gasUsed, uint timestamp, uint nonce) {
@@ -123,41 +137,45 @@ contract Helper {
     uint8 constant STRING_LONG_START  = 0xb8;
     uint8 constant LIST_SHORT_START   = 0xc0;
     uint8 constant LIST_LONG_START    = 0xf8;
-    function _itemLength(uint memPtr) private pure returns (uint len) {
-        uint byte0;
-        assembly {
-            byte0 := byte(0, mload(memPtr))
-        }
+    function _itemLength(uint memPtr) private pure returns (uint) {
+       uint itemLen;
+       uint byte0;
+       assembly {
+           byte0 := byte(0, mload(memPtr))
+       }
 
-        if (byte0 < STRING_SHORT_START)
-            return 1;
-        
-        else if (byte0 < STRING_LONG_START)
-            return byte0 - STRING_SHORT_START + 1;
+       if (byte0 < STRING_SHORT_START)
+           itemLen = 1;
 
-        else if (byte0 < LIST_SHORT_START) {
-            assembly {
-                let byteLen := sub(byte0, 0xb7) // # of bytes the actual length is
-                memPtr := add(memPtr, 1) // skip over the first byte
-                
-                /* 32 byte word size */
-                let dataLen := div(mload(memPtr), exp(256, sub(32, byteLen))) // right shifting to get the len
-                len := add(dataLen, add(byteLen, 1))
-            }
-        }
+       else if (byte0 < STRING_LONG_START)
+           itemLen = byte0 - STRING_SHORT_START + 1;
 
-        else if (byte0 < LIST_LONG_START) {
-            return byte0 - LIST_SHORT_START + 1;
-        } 
+       else if (byte0 < LIST_SHORT_START) {
+           assembly {
+               let byteLen := sub(byte0, 0xb7) // # of bytes the actual length is
+               memPtr := add(memPtr, 1) // skip over the first byte
 
-        else {
-            assembly {
-                let byteLen := sub(byte0, 0xf7)
-                memPtr := add(memPtr, 1)
+               /* 32 byte word size */
+               let dataLen := div(mload(memPtr), exp(256, sub(32, byteLen))) // right shifting to get the len
+               itemLen := add(dataLen, add(byteLen, 1))
+           }
+       }
 
-                let dataLen := div(mload(memPtr), exp(256, sub(32, byteLen))) // right shifting to the correct length
-                len := add(dataLen, add(byteLen, 1))
-            }
-        }
+       else if (byte0 < LIST_LONG_START) {
+           itemLen = byte0 - LIST_SHORT_START + 1;
+       }
+
+       else {
+           assembly {
+               let byteLen := sub(byte0, 0xf7)
+               memPtr := add(memPtr, 1)
+
+               let dataLen := div(mload(memPtr), exp(256, sub(32, byteLen))) // right shifting to the correct length
+               itemLen := add(dataLen, add(byteLen, 1))
+           }
+       }
+
+       return itemLen;
     }
 }
+

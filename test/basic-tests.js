@@ -9,7 +9,7 @@ let toHex = (buf) => {
     return "0x" + buf.toString("hex");
 };
 
-let catchError = function(promise) {
+let catchError = (promise) => {
   return promise.then(result => [null, result])
       .catch(err => [err]);
 };
@@ -201,11 +201,11 @@ contract("RLPReader", async (accounts) => {
 
     it("catches bad input", async () => {
         let err;
-        [err] = await catchError(helper.toBoolean(toHex(rlp.encode(256))));
+        [err] = await catchError(helper.toBoolean.call(toHex(rlp.encode(256))));
         if (!err) {
             assert.fail(null, null, "converted a boolean larger than a byte");
         }
-        [err] = await catchError(helper.toBoolean(toHex('')));
+        [err] = await catchError(helper.toBoolean.call(toHex('')));
         if (!err) {
             assert.fail(null, null, "converted a boolean of empty bytes");
         }
@@ -236,10 +236,29 @@ contract("RLPReader", async (accounts) => {
             assert.fail(null, null, "converted a uint without padding to 32 bytes with strict enforcement");
         }
 
-        [err] = await catchError(helper.toBytes(toHex('')));
+        [err] = await catchError(helper.toBytes.call(toHex('')));
         if (!err) {
             assert.fail(null, null, "converted to bytes of empty bytes");
         }
+    });
+
+    it("correctly creates an iterator", async () => {
+        let err;
+
+        let data = rlp.encode("foo");
+        [err] = await catchError(helper.toIterator.call(toHex(data)));
+        if (!err)
+            assert.fail(null, null, "constructed an iterator from something not a list");
+
+        data = rlp.encode([1, "isvalid", 2]);
+        [err, _] = await catchError(helper.toIterator.call(toHex(data)));
+        if (err)
+            assert.fail(null, null, "could not construct iterator out of a valid list")
+
+        data = rlp.encode([["whoooo", "hooo"]])
+        [err, _] = await catchError(helper.nestedIteration.call(toHex(data)));
+        if (err)
+            assert.fail(null, null, "could not construct iterator out of a sublist")
     });
 
     it("correctly iterates over an RLP list (e.g., an RLP encoded block header)", async () => {
@@ -264,7 +283,7 @@ contract("RLPReader", async (accounts) => {
             totalDifficulty: '10690776258913596267754',
         };
         const rlpHeader = toRLPHeader(block);
-        const result = await helper.toBlockHeader(rlpHeader, {});
+        const result = await helper.toBlockHeader.call(rlpHeader, {});
         assert(result.parentHash == block.parentHash, "parentHash not equal");
         assert(result.sha3Uncles == block.sha3Uncles, "sha3Uncles not equal");
         assert(result.stateRoot  == block.stateRoot,  "stateRoot not equal");

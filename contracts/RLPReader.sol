@@ -26,13 +26,14 @@ library RLPReader {
     * @param self The iterator.
     * @return The next element in the iteration.
     */
-    function next(Iterator memory self) internal pure returns (RLPItem memory subItem) {
+    function next(Iterator memory self) internal pure returns (RLPItem memory) {
         require(hasNext(self));
+
         uint ptr = self.nextPtr;
         uint itemLength = _itemLength(ptr);
-        subItem.memPtr = ptr;
-        subItem.len = itemLength;
         self.nextPtr = ptr + itemLength;
+
+        return RLPItem(itemLength, ptr);
     }
 
     /*
@@ -62,11 +63,11 @@ library RLPReader {
     * @param self The RLP item.
     * @return An 'Iterator' over the item.
     */
-    function iterator(RLPItem memory self) internal pure returns (Iterator memory it) {
+    function iterator(RLPItem memory self) internal pure returns (Iterator memory) {
         require(isList(self));
+
         uint ptr = self.memPtr + _payloadOffset(self.memPtr);
-        it.item = self;
-        it.nextPtr = ptr;
+        return Iterator(self, ptr);
     }
 
     /*
@@ -86,11 +87,11 @@ library RLPReader {
     /*
     * @param item RLP encoded list in bytes
     */
-    function toList(RLPItem memory item) internal pure returns (RLPItem[] memory result) {
+    function toList(RLPItem memory item) internal pure returns (RLPItem[] memory) {
         require(isList(item));
 
         uint items = numItems(item);
-        result = new RLPItem[](items);
+        RLPItem[] memory result = new RLPItem[](items);
 
         uint memPtr = item.memPtr + _payloadOffset(item.memPtr);
         uint dataLen;
@@ -99,6 +100,8 @@ library RLPReader {
             result[i] = RLPItem(dataLen, memPtr); 
             memPtr = memPtr + dataLen;
         }
+
+        return result;
     }
 
     // @return indicator whether encoded payload is a list. negate this function call for isData.
@@ -221,17 +224,18 @@ library RLPReader {
     }
 
     // @return entire rlp item byte length
-    function _itemLength(uint memPtr) private pure returns (uint len) {
+    function _itemLength(uint memPtr) private pure returns (uint) {
+        uint itemLen;
         uint byte0;
         assembly {
             byte0 := byte(0, mload(memPtr))
         }
 
         if (byte0 < STRING_SHORT_START)
-            return 1;
+            itemLen = 1;
         
         else if (byte0 < STRING_LONG_START)
-            return byte0 - STRING_SHORT_START + 1;
+            itemLen = byte0 - STRING_SHORT_START + 1;
 
         else if (byte0 < LIST_SHORT_START) {
             assembly {
@@ -240,12 +244,12 @@ library RLPReader {
                 
                 /* 32 byte word size */
                 let dataLen := div(mload(memPtr), exp(256, sub(32, byteLen))) // right shifting to get the len
-                len := add(dataLen, add(byteLen, 1))
+                itemLen := add(dataLen, add(byteLen, 1))
             }
         }
 
         else if (byte0 < LIST_LONG_START) {
-            return byte0 - LIST_SHORT_START + 1;
+            itemLen = byte0 - LIST_SHORT_START + 1;
         } 
 
         else {
@@ -254,9 +258,11 @@ library RLPReader {
                 memPtr := add(memPtr, 1)
 
                 let dataLen := div(mload(memPtr), exp(256, sub(32, byteLen))) // right shifting to the correct length
-                len := add(dataLen, add(byteLen, 1))
+                itemLen := add(dataLen, add(byteLen, 1))
             }
         }
+
+        return itemLen;
     }
 
     // @return number of bytes until the data
