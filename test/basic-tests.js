@@ -255,10 +255,9 @@ contract("RLPReader", async (accounts) => {
         if (err)
             assert.fail(null, null, "could not construct iterator out of a valid list")
 
-        data = rlp.encode([["whoooo", "hooo"]])
-        [err, _] = await catchError(helper.nestedIteration.call(toHex(data)));
-        if (err)
-            assert.fail(null, null, "could not construct iterator out of a sublist")
+        data = rlp.encode([["yeah!"]])
+        let result = await helper.nestedIteration.call(toHex(data));
+        assert(result == "yeah!", "could not retrieve the string in the sublist")
     });
 
     it("correctly iterates over an RLP list (e.g., an RLP encoded block header)", async () => {

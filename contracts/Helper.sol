@@ -80,13 +80,16 @@ contract Helper {
         item.toRlpItem().iterator();
     }
 
-    // expects [[sublist],... ]
-    function nestedIteration(bytes memory item) public pure {
+    // expects [["somestring"]]
+    function nestedIteration(bytes memory item) public pure returns (string memory) {
         RLPReader.Iterator memory iter = item.toRlpItem().iterator();
-        RLPReader.RLPItem memory subList = iter.next();
+        RLPReader.Iterator memory subIter = iter.next().iterator();
+        string memory result = string(subIter.next().toBytes());
 
-        // we just care that this doesn't revert
-        subList.iterator();
+        require(!iter.hasNext());
+        require(!subIter.hasNext());
+
+        return result;
     }
 
     function toBlockHeader(bytes memory rlpHeader) public pure returns (

@@ -17,7 +17,7 @@ destructured into the desired data types.
 Transformations(All take an RLPItem as an arg):  
 1. `isList(RLPItem) bool` : inidicator if the encoded data is a list
 2. `toList(RLPItem) RLPItem[]` : returns a list of RLPItems
-3. `iterator(RLPITem) Iterator` : returns an `Iterator` over the RLPItem. Must be a rlp encoded list
+3. `iterator(RLPITem) Iterator` : returns an `Iterator` over the RLPItem. RLPItem must be an encoded list
 4. `toBytes(RLPItem) bytes` : returns the payload in bytes
 5. `toAddress(RLPItem) address` : returns the encoded address. Must be exactly 20 bytes.
 6. `toUint(RLPItem) uint` : returns the encoded uint. Enforced data is capped to 32 bytes.
@@ -26,9 +26,8 @@ Transformations(All take an RLPItem as an arg):
 9. `toRlpBytes(RLPItem) bytes `: returns the raw rlp encoded byte form
 10. `rlpLen(RLPItem) uint` : returns the byte length of the rlp item
 11. `payloadLen(RLPItem) uint` : returns the byte length of the data payload
-
-1. `hasNext(Iterator) bool` : indicator if there is another item to iterate on
-2. `next(Iterator) RLPItem` : returns the next `RLPItem` in the iterator
+12. `hasNext(Iterator) bool` : indicator if there is another item to iterate on
+13. `next(Iterator) RLPItem` : returns the next `RLPItem` in the iterator
 
 **Note**: The reader contract only provides only these conversion functions. All other solidity data types can be derived from
 this base. For example, a `bytes32` encoded data type is equivalent to `bytes32(toUint(RLPItem))`. Start with a uint and convert from there.
@@ -54,6 +53,16 @@ contract SomeContract {
 
         ls[1].toUint() // 2
         ls[2].toAddress() // 0x<Address>
+    }
+
+    // lets assume rlpBytes is an encoding of [["sublist"]]
+    func someFunctionThatDemonstratesIterators(bytes memory rlpBytes) public {
+        RLPReader.Iterator memory iter = rlpBytes.toRlpItem().iterator();
+        RLPReader.Iterator memory subIter = iter.next().iterator();
+
+        // iter.hasNext() == false
+        // string(subIter.next().toBytes()) == "sublist"
+        // subIter.hasNext() == false
     }
 }
 ```
