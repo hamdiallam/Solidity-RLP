@@ -1,7 +1,7 @@
 # Changelog
 
 ## 2.0.2
-## Changed
+### Changed
 - `toBoolean(RLPItem)` will return false for the rlp encoded string, "0x80". This is because common
 rlp encoding libraries will encode "0" as "0x08".
 
