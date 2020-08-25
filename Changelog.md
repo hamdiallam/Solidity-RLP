@@ -1,5 +1,10 @@
 # Changelog
 
+## 2.0.2
+### Changed
+- `toBoolean(RLPItem)` will return false for the rlp encoded string, "0x80". This is because common
+rlp encoding libraries will encode "0" as "0x08".
+
 ## 2.0.1
 ### Added
 - `iterator(RLPItem)` returns an iterator object over an rlp encoded list
