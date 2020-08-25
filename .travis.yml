@@ -3,12 +3,8 @@ language: node_js
 node_js: "node"
 
 before_script:
-  - npm install -g truffle@5.0.1 ganache-cli@6.1.8
+  - npm install -g truffle@5.1.36
   - npm install
 
 script: 
-  - ganache-cli > /dev/null &
-  - sleep 5
-  - rm -rf build
-  - truffle migrate
-  - truffle test
+  - npm run test
