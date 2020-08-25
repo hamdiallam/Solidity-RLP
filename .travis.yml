@@ -7,6 +7,6 @@ before_script:
   - npm install
 
 script: 
-  - ganache-cli > /dev/null &
+  - ganache-cli -p 8545 > /dev/null &
   - sleep 5
   - npm run test
