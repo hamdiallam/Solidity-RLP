@@ -135,7 +135,7 @@ library RLPReader {
         return result;
     }
 
-    // any non-zero byte is considered true
+    // any non-zero byte except "0x80" is considered true
     function toBoolean(RLPItem memory item) internal pure returns (bool) {
         require(item.len == 1);
         uint result;
@@ -144,7 +144,15 @@ library RLPReader {
             result := byte(0, mload(memPtr))
         }
 
-        return result == 0 ? false : true;
+        // SEE Github Issue #5.
+        // Summary: Most commonly used RLP libraries (i.e Geth) will encode
+        // "0" as "0x80" instead of as "0". We handle this edge case explicitly
+        // here.
+        if (result == 0 || result == STRING_SHORT_START) {
+            return false;
+        } else {
+            return true;
+        }
     }
 
     function toAddress(RLPItem memory item) internal pure returns (address) {
