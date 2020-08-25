@@ -1,12 +1,13 @@
 language: node_js
 
 node_js: "node"
+  - 12
 
 before_script:
   - npm install -g truffle@5.1.41 ganache-cli@6.10.1
   - npm install
 
 script: 
-  - ganache-cli -p 8545 &
+  - ganache-cli -p 8545 > /dev/null &
   - sleep 5
   - npm run test
