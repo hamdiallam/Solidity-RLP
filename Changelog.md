@@ -1,5 +1,9 @@
 # Changelog
 
+## 2.0.3
+### Added
+- support for solidity 0.6.x
+
 ## 2.0.2
 ### Changed
 - `toBoolean(RLPItem)` will return false for the rlp encoded string, "0x80". This is because common
