@@ -1,4 +1,6 @@
-pragma solidity ^0.5.0;
+// SPDX-License-Identifier: Apache-2.0
+
+pragma solidity >=0.5.0 <0.7.0;
 
 /*
 * Used to proxy function calls to the RLPReader for testing
@@ -135,7 +137,7 @@ contract Helper {
         return items[0].toRlpBytes();
     }
 
-    /** Copied verbatim from the reader contract due to scope **/
+    /* Copied verbatim from the reader contract due to scope */
     uint8 constant STRING_SHORT_START = 0x80;
     uint8 constant STRING_LONG_START  = 0xb8;
     uint8 constant LIST_SHORT_START   = 0xc0;
