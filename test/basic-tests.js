@@ -298,4 +298,18 @@ contract("RLPReader", async (accounts) => {
         assert(result.timestamp == block.timestamp, "timestamp not equal");
         assert(result.nonce.toString() == web3.utils.toBN(block.nonce).toString(), "nonce not equal");
     });
+
+    it("correctly computes keccak256 hash of RLP bytes", async () => {
+        let data = rlp.encode("foo");
+        let result = await helper.rlpBytesKeccak256.call(toHex(data));
+        assert.equal(result, web3.utils.keccak256(data), "string");
+
+        data = rlp.encode(42);
+        result = await helper.rlpBytesKeccak256.call(toHex(data));
+        assert.equal(result, web3.utils.keccak256(data), "uint");
+
+        data = rlp.encode(["foo", 42]);
+        result = await helper.rlpBytesKeccak256.call(toHex(data));
+        assert.equal(result, web3.utils.keccak256(data), "list");
+    });
 });

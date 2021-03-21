@@ -42,6 +42,11 @@ contract Helper {
         return rlpItem.length;
     }
 
+    function rlpBytesKeccak256(bytes memory item) public pure returns (bytes32) {
+        RLPReader.RLPItem memory rlpItem = item.toRlpItem();
+        return rlpItem.rlpBytesKeccak256();
+    }
+
     function toRlpBytes(bytes memory item) public pure returns (bytes memory) {
         RLPReader.RLPItem memory rlpItem = item.toRlpItem();
         return rlpItem.toRlpBytes();
