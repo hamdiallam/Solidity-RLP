@@ -47,6 +47,11 @@ contract Helper {
         return rlpItem.rlpBytesKeccak256();
     }
 
+    function payloadKeccak256(bytes memory item) public pure returns (bytes32) {
+        RLPReader.RLPItem memory rlpItem = item.toRlpItem();
+        return rlpItem.payloadKeccak256();
+    }
+
     function toRlpBytes(bytes memory item) public pure returns (bytes memory) {
         RLPReader.RLPItem memory rlpItem = item.toRlpItem();
         return rlpItem.toRlpBytes();
@@ -135,6 +140,13 @@ contract Helper {
         RLPReader.RLPItem[] memory items = item.toRlpItem().toList();
         items = items[0].toList();
         return (items[0].toAddress(), items[1].toUint());
+    }
+
+    // expects [[bytes, bytes]]
+    function customNestedDestructureKeccak(bytes memory item) public pure returns (bytes32, bytes32) {
+        RLPReader.RLPItem[] memory items = item.toRlpItem().toList();
+        items = items[0].toList();
+        return (items[0].payloadKeccak256(), items[1].payloadKeccak256());
     }
 
     function customNestedToRlpBytes(bytes memory item) public pure returns (bytes memory) {

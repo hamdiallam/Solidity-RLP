@@ -312,4 +312,26 @@ contract("RLPReader", async (accounts) => {
         result = await helper.rlpBytesKeccak256.call(toHex(data));
         assert.equal(result, web3.utils.keccak256(data), "list");
     });
+
+    it("correctly computes keccak256 hash of the item payload", async () => {
+        const data = '0xdeadbeef';
+        const rlpBytes = rlp.encode(Buffer.from(data.slice(2), 'hex'));
+        const result = await helper.payloadKeccak256.call(rlpBytes);
+        assert.equal(result, web3.utils.keccak256(data));
+    });
+
+    it("correctly computes keccak256 hash of the item payload (nested list)", async () => {
+        const data_0_0 = '0xdeadbeef';
+        const data_0_1 = '0xaabbcc';
+
+        const rlpBytes = rlp.encode([[
+            Buffer.from(data_0_0.slice(2), 'hex'),
+            Buffer.from(data_0_1.slice(2), 'hex')
+        ]]);
+
+        const result = await helper.customNestedDestructureKeccak.call(rlpBytes);
+
+        assert.equal(result[0], web3.utils.keccak256(data_0_0), "item [0][0]");
+        assert.equal(result[1], web3.utils.keccak256(data_0_1), "item [0][1]");
+    });
 });
