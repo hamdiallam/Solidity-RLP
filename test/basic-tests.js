@@ -334,4 +334,17 @@ contract("RLPReader", async (accounts) => {
         assert.equal(result[0], web3.utils.keccak256(data_0_0), "item [0][0]");
         assert.equal(result[1], web3.utils.keccak256(data_0_1), "item [0][1]");
     });
+
+    it("payloadKeccak256 for empty payload is the same as keccak256(new bytes(0))", async () => {
+        // keccak256(new bytes(0))
+        const EMPTY_BYTES_HASH = '0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470';
+
+        const emptyListRlpBytes = rlp.encode([]); // 0xc0
+        const emptyListDataHash = await helper.payloadKeccak256.call(emptyListRlpBytes);
+        assert.equal(emptyListDataHash, EMPTY_BYTES_HASH, "empty list");
+
+        const emptyBytesRlpBytes = rlp.encode(Buffer.alloc(0)); // 0x80
+        const emptyBytesDataHash = await helper.payloadKeccak256.call(emptyBytesRlpBytes);
+        assert.equal(emptyBytesDataHash, EMPTY_BYTES_HASH, "empty bytes");
+    })
 });
