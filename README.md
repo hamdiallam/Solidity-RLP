@@ -35,6 +35,12 @@ Iteration functions:
 2. `hasNext(Iterator) bool` : indicator if there is another item to iterate on
 3. `next(Iterator) RLPItem` : returns the next `RLPItem` in the iterator
 
+Utility functions:
+1. `rlpBytesKeccak256(RLPItem) bytes32` : returns keccak256 hash of RLP encoded bytes. A cheap version
+   of `keccak256(toRlpBytes(RLPItem))` that avoids copying memory.
+2. `payloadKeccak256(RLPItem) bytes32` : returns keccak256 hash of the item payload. A cheap
+   version of `keccak256(toBytes(RLPItem))` that avoids copying memory.
+
 ## Example
 ```solidity
 import "solidity-rlp/contracts/RLPReader.sol"
