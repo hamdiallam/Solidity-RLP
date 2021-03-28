@@ -4,6 +4,8 @@
 ### Added
 - `rlpBytesKeccak256(RLPItem)` returns keccak256 hash of RLP encoded bytes.
 - `payloadKeccak256(RLPItem)` returns keccak256 hash of the item payload.
+- `payloadLocation(RLPItem) (uint memPtr, uint len)` returns the memory pointer and byte length of
+  the data payload.
 
 ## 2.0.3
 ### Added
