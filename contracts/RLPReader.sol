@@ -73,21 +73,21 @@ library RLPReader {
     }
 
     /*
-    * @param item RLP encoded bytes
+    * @param the RLP item.
     */
     function rlpLen(RLPItem memory item) internal pure returns (uint) {
         return item.len;
     }
 
     /*
-    * @param item RLP encoded bytes
+    * @param the RLP item.
     */
     function payloadLen(RLPItem memory item) internal pure returns (uint) {
         return item.len - _payloadOffset(item.memPtr);
     }
 
     /*
-    * @param item RLP encoded list in bytes
+    * @param the RLP item containing the encoded list.
     */
     function toList(RLPItem memory item) internal pure returns (RLPItem[] memory) {
         require(isList(item));
