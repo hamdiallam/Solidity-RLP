@@ -121,6 +121,35 @@ library RLPReader {
         return true;
     }
 
+    /*
+     * @dev A cheaper version of keccak256(toRlpBytes(item)) that avoids copying memory.
+     * @return keccak256 hash of RLP encoded bytes.
+     */
+    function rlpBytesKeccak256(RLPItem memory item) internal pure returns (bytes32) {
+        uint256 ptr = item.memPtr;
+        uint256 len = item.len;
+        bytes32 result;
+        assembly {
+            result := keccak256(ptr, len)
+        }
+        return result;
+    }
+
+    /*
+     * @dev A cheaper version of keccak256(toBytes(item)) that avoids copying memory.
+     * @return keccak256 hash of the item payload.
+     */
+    function payloadKeccak256(RLPItem memory item) internal pure returns (bytes32) {
+        uint256 offset = _payloadOffset(item.memPtr);
+        uint256 ptr = item.memPtr + offset;
+        uint len = item.len - offset;
+        bytes32 result;
+        assembly {
+            result := keccak256(ptr, len)
+        }
+        return result;
+    }
+
     /** RLPItem conversions into data types **/
 
     // @returns raw rlp encoding in bytes

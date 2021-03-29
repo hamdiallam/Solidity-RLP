@@ -298,4 +298,53 @@ contract("RLPReader", async (accounts) => {
         assert(result.timestamp == block.timestamp, "timestamp not equal");
         assert(result.nonce.toString() == web3.utils.toBN(block.nonce).toString(), "nonce not equal");
     });
+
+    it("correctly computes keccak256 hash of RLP bytes", async () => {
+        let data = rlp.encode("foo");
+        let result = await helper.rlpBytesKeccak256.call(toHex(data));
+        assert.equal(result, web3.utils.keccak256(data), "string");
+
+        data = rlp.encode(42);
+        result = await helper.rlpBytesKeccak256.call(toHex(data));
+        assert.equal(result, web3.utils.keccak256(data), "uint");
+
+        data = rlp.encode(["foo", 42]);
+        result = await helper.rlpBytesKeccak256.call(toHex(data));
+        assert.equal(result, web3.utils.keccak256(data), "list");
+    });
+
+    it("correctly computes keccak256 hash of the item payload", async () => {
+        const data = '0xdeadbeef';
+        const rlpBytes = rlp.encode(Buffer.from(data.slice(2), 'hex'));
+        const result = await helper.payloadKeccak256.call(rlpBytes);
+        assert.equal(result, web3.utils.keccak256(data));
+    });
+
+    it("correctly computes keccak256 hash of the item payload (nested list)", async () => {
+        const data_0_0 = '0xdeadbeef';
+        const data_0_1 = '0xaabbcc';
+
+        const rlpBytes = rlp.encode([[
+            Buffer.from(data_0_0.slice(2), 'hex'),
+            Buffer.from(data_0_1.slice(2), 'hex')
+        ]]);
+
+        const result = await helper.customNestedDestructureKeccak.call(rlpBytes);
+
+        assert.equal(result[0], web3.utils.keccak256(data_0_0), "item [0][0]");
+        assert.equal(result[1], web3.utils.keccak256(data_0_1), "item [0][1]");
+    });
+
+    it("payloadKeccak256 for empty payload is the same as keccak256(new bytes(0))", async () => {
+        // keccak256(new bytes(0))
+        const EMPTY_BYTES_HASH = '0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470';
+
+        const emptyListRlpBytes = rlp.encode([]); // 0xc0
+        const emptyListDataHash = await helper.payloadKeccak256.call(emptyListRlpBytes);
+        assert.equal(emptyListDataHash, EMPTY_BYTES_HASH, "empty list");
+
+        const emptyBytesRlpBytes = rlp.encode(Buffer.alloc(0)); // 0x80
+        const emptyBytesDataHash = await helper.payloadKeccak256.call(emptyBytesRlpBytes);
+        assert.equal(emptyBytesDataHash, EMPTY_BYTES_HASH, "empty bytes");
+    })
 });

@@ -1,5 +1,10 @@
 # Changelog
 
+## 2.0.4
+### Added
+- `rlpBytesKeccak256(RLPItem)` returns keccak256 hash of RLP encoded bytes.
+- `payloadKeccak256(RLPItem)` returns keccak256 hash of the item payload.
+
 ## 2.0.3
 ### Added
 - support for solidity 0.6.x
