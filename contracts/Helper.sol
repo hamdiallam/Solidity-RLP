@@ -32,9 +32,14 @@ contract Helper {
         return rlpItem.rlpLen();
     }
 
-    function payloadLen(bytes memory item) public pure returns (uint) {
+    function payloadLocation(bytes memory item) public pure returns (
+        uint payloadMemPtr,
+        uint payloadLen,
+        uint itemMemPtr
+    ) {
         RLPReader.RLPItem memory rlpItem = item.toRlpItem();
-        return rlpItem.payloadLen();
+        (uint memPtr, uint len) = rlpItem.payloadLocation();
+        return (memPtr, len, rlpItem.memPtr);
     }
 
     function numItems(bytes memory item) public pure returns (uint) {

@@ -73,21 +73,33 @@ library RLPReader {
     }
 
     /*
-    * @param item RLP encoded bytes
+    * @param the RLP item.
     */
     function rlpLen(RLPItem memory item) internal pure returns (uint) {
         return item.len;
     }
 
     /*
-    * @param item RLP encoded bytes
-    */
-    function payloadLen(RLPItem memory item) internal pure returns (uint) {
-        return item.len - _payloadOffset(item.memPtr);
+     * @param the RLP item.
+     * @return (memPtr, len) pair: location of the item's payload in memory.
+     */
+    function payloadLocation(RLPItem memory item) internal pure returns (uint, uint) {
+        uint offset = _payloadOffset(item.memPtr);
+        uint memPtr = item.memPtr + offset;
+        uint len = item.len - offset; // data length
+        return (memPtr, len);
     }
 
     /*
-    * @param item RLP encoded list in bytes
+    * @param the RLP item.
+    */
+    function payloadLen(RLPItem memory item) internal pure returns (uint) {
+        (, uint len) = payloadLocation(item);
+        return len;
+    }
+
+    /*
+    * @param the RLP item containing the encoded list.
     */
     function toList(RLPItem memory item) internal pure returns (RLPItem[] memory) {
         require(isList(item));
@@ -140,12 +152,10 @@ library RLPReader {
      * @return keccak256 hash of the item payload.
      */
     function payloadKeccak256(RLPItem memory item) internal pure returns (bytes32) {
-        uint256 offset = _payloadOffset(item.memPtr);
-        uint256 ptr = item.memPtr + offset;
-        uint len = item.len - offset;
+        (uint memPtr, uint len) = payloadLocation(item);
         bytes32 result;
         assembly {
-            result := keccak256(ptr, len)
+            result := keccak256(memPtr, len)
         }
         return result;
     }
@@ -196,11 +206,9 @@ library RLPReader {
     function toUint(RLPItem memory item) internal pure returns (uint) {
         require(item.len > 0 && item.len <= 33);
 
-        uint offset = _payloadOffset(item.memPtr);
-        uint len = item.len - offset;
+        (uint memPtr, uint len) = payloadLocation(item);
 
         uint result;
-        uint memPtr = item.memPtr + offset;
         assembly {
             result := mload(memPtr)
 
@@ -230,8 +238,7 @@ library RLPReader {
     function toBytes(RLPItem memory item) internal pure returns (bytes memory) {
         require(item.len > 0);
 
-        uint offset = _payloadOffset(item.memPtr);
-        uint len = item.len - offset; // data length
+        (uint memPtr, uint len) = payloadLocation(item);
         bytes memory result = new bytes(len);
 
         uint destPtr;
@@ -239,7 +246,7 @@ library RLPReader {
             destPtr := add(0x20, result)
         }
 
-        copy(item.memPtr + offset, destPtr, len);
+        copy(memPtr, destPtr, len);
         return result;
     }
 

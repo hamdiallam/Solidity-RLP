@@ -24,7 +24,8 @@ Transformations (all take an RLPItem as an arg):
 7. `toBoolean(RLPItem) bool` : returns the encoded boolean
 8. `toRlpBytes(RLPItem) bytes ` : returns the raw rlp encoded byte form
 9. `rlpLen(RLPItem) uint` : returns the byte length of the rlp item
-10. `payloadLen(RLPItem) uint` : returns the byte length of the data payload
+10. `payloadLocation(RLPItem) (uint memPtr, uint len)` : returns the memory pointer and byte length of the data payload
+11. `payloadLen(RLPItem) uint` : returns the byte length of the data payload; an alias to payloadLocation(item)[1]
 
 **Note**: The reader contract only provides only these conversion functions. All other solidity data types can be derived from
 this base. For example, a `bytes32` encoded data type is equivalent to `bytes32(toUint(RLPItem))`. Start with a uint and convert from there.
