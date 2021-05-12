@@ -1,5 +1,9 @@
 # Changelog
 
+## 2.0.5
+### Changed
+- Save gas when copying memory that's a multiple of 32 bytes.
+
 ## 2.0.4
 ### Added
 - `rlpBytesKeccak256(RLPItem)` returns keccak256 hash of RLP encoded bytes.
