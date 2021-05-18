@@ -85,3 +85,19 @@ contract SomeContract {
 4. `ganache-cli` run in a background process or seperate terminal window.
 4. `truffle compile && truffle test`
 
+
+## Audits
+
+### 2021-05: MixBytes
+
+Version 2.0.5 of this library (commit [`a283779`](https://github.com/hamdiallam/Solidity-RLP/tree/a2837797e4da79070701339947f32f5725e08b56)) was audited by [MixBytes](https://github.com/mixbytes) as part of the Lido stETH price oracle audit.
+
+Summary:
+
+- Total Issues: 1 (1 Fixed)
+- Critical Issues: 0 (0 Fixed)
+- Major Issues: 0 (0 Fixed)
+- Warning Issues: 0 (0 No issue)
+- Comment Risk Issues: 1 (1 Fixed)
+
+See [the full report](https://github.com/lidofinance/audits/blob/main/MixBytes%20stETH%20price%20oracle%20Security%20Audit%20Report%2005-2021.pdf) for details.
