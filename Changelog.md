@@ -1,5 +1,9 @@
 # Changelog
 
+## 2.0.6
+### Changed
+- Extended Solidity support to v0.8.17
+
 ## 2.0.5
 ### Changed
 - Save gas when copying memory that's a multiple of 32 bytes.
