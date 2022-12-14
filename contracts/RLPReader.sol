@@ -4,7 +4,7 @@
  * @author Hamdi Allam hamdi.allam97@gmail.com
  * Please reach out with any questions or concerns
  */
-pragma solidity ^0.8.15;
+pragma solidity >=0.5.10 <0.8.17;
 
 library RLPReader {
     uint8 constant STRING_SHORT_START = 0x80;
@@ -51,11 +51,7 @@ library RLPReader {
     /*
      * @param item RLP encoded bytes
      */
-    function toRlpItem(bytes memory item)
-        internal
-        pure
-        returns (RLPItem memory)
-    {
+    function toRlpItem(bytes memory item) internal pure returns (RLPItem memory) {
         uint256 memPtr;
         assembly {
             memPtr := add(item, 0x20)
@@ -69,11 +65,7 @@ library RLPReader {
      * @param self The RLP item.
      * @return An 'Iterator' over the item.
      */
-    function iterator(RLPItem memory self)
-        internal
-        pure
-        returns (Iterator memory)
-    {
+    function iterator(RLPItem memory self) internal pure returns (Iterator memory) {
         require(isList(self));
 
         uint256 ptr = self.memPtr + _payloadOffset(self.memPtr);
@@ -91,11 +83,7 @@ library RLPReader {
      * @param the RLP item.
      * @return (memPtr, len) pair: location of the item's payload in memory.
      */
-    function payloadLocation(RLPItem memory item)
-        internal
-        pure
-        returns (uint256, uint256)
-    {
+    function payloadLocation(RLPItem memory item) internal pure returns (uint256, uint256) {
         uint256 offset = _payloadOffset(item.memPtr);
         uint256 memPtr = item.memPtr + offset;
         uint256 len = item.len - offset; // data length
@@ -113,11 +101,7 @@ library RLPReader {
     /*
      * @param the RLP item containing the encoded list.
      */
-    function toList(RLPItem memory item)
-        internal
-        pure
-        returns (RLPItem[] memory)
-    {
+    function toList(RLPItem memory item) internal pure returns (RLPItem[] memory) {
         require(isList(item));
 
         uint256 items = numItems(item);
@@ -152,11 +136,7 @@ library RLPReader {
      * @dev A cheaper version of keccak256(toRlpBytes(item)) that avoids copying memory.
      * @return keccak256 hash of RLP encoded bytes.
      */
-    function rlpBytesKeccak256(RLPItem memory item)
-        internal
-        pure
-        returns (bytes32)
-    {
+    function rlpBytesKeccak256(RLPItem memory item) internal pure returns (bytes32) {
         uint256 ptr = item.memPtr;
         uint256 len = item.len;
         bytes32 result;
@@ -170,11 +150,7 @@ library RLPReader {
      * @dev A cheaper version of keccak256(toBytes(item)) that avoids copying memory.
      * @return keccak256 hash of the item payload.
      */
-    function payloadKeccak256(RLPItem memory item)
-        internal
-        pure
-        returns (bytes32)
-    {
+    function payloadKeccak256(RLPItem memory item) internal pure returns (bytes32) {
         (uint256 memPtr, uint256 len) = payloadLocation(item);
         bytes32 result;
         assembly {
@@ -186,11 +162,7 @@ library RLPReader {
     /** RLPItem conversions into data types **/
 
     // @returns raw rlp encoding in bytes
-    function toRlpBytes(RLPItem memory item)
-        internal
-        pure
-        returns (bytes memory)
-    {
+    function toRlpBytes(RLPItem memory item) internal pure returns (bytes memory) {
         bytes memory result = new bytes(item.len);
         if (result.length == 0) return result;
 
@@ -239,7 +211,7 @@ library RLPReader {
         assembly {
             result := mload(memPtr)
 
-            // shfit to the correct location if neccesary
+            // shift to the correct location if neccesary
             if lt(len, 32) {
                 result := div(result, exp(256, sub(32, len)))
             }
@@ -304,10 +276,11 @@ library RLPReader {
             byte0 := byte(0, mload(memPtr))
         }
 
-        if (byte0 < STRING_SHORT_START) itemLen = 1;
-        else if (byte0 < STRING_LONG_START)
+        if (byte0 < STRING_SHORT_START) {
+            itemLen = 1;
+        } else if (byte0 < STRING_LONG_START) {
             itemLen = byte0 - STRING_SHORT_START + 1;
-        else if (byte0 < LIST_SHORT_START) {
+        } else if (byte0 < LIST_SHORT_START) {
             assembly {
                 let byteLen := sub(byte0, 0xb7) // # of bytes the actual length is
                 memPtr := add(memPtr, 1) // skip over the first byte
@@ -338,15 +311,16 @@ library RLPReader {
             byte0 := byte(0, mload(memPtr))
         }
 
-        if (byte0 < STRING_SHORT_START) return 0;
-        else if (
-            byte0 < STRING_LONG_START ||
-            (byte0 >= LIST_SHORT_START && byte0 < LIST_LONG_START)
-        ) return 1;
-        else if (byte0 < LIST_SHORT_START)
+        if (byte0 < STRING_SHORT_START) {
+            return 0;
+        } else if (byte0 < STRING_LONG_START || (byte0 >= LIST_SHORT_START && byte0 < LIST_LONG_START)) {
+            return 1;
+        } else if (byte0 < LIST_SHORT_START) {
             // being explicit
             return byte0 - (STRING_LONG_START - 1) + 1;
-        else return byte0 - (LIST_LONG_START - 1) + 1;
+        } else {
+            return byte0 - (LIST_LONG_START - 1) + 1;
+        }
     }
 
     /*
@@ -354,11 +328,7 @@ library RLPReader {
      * @param dest Pointer to destination
      * @param len Amount of memory to copy from the source
      */
-    function copy(
-        uint256 src,
-        uint256 dest,
-        uint256 len
-    ) private pure {
+    function copy(uint256 src, uint256 dest, uint256 len) private pure {
         if (len == 0) return;
 
         // copy as many word sizes as possible
