@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
-pragma solidity >=0.5.0 <=0.8.18;
+pragma solidity >=0.5.10 <0.9.0;
 
 contract Migrations {
   address public owner;
