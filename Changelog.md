@@ -1,5 +1,9 @@
 # Changelog
 
+## 2.0.8
+### Changed
+- Support any patch version of v0.8
+
 ## 2.0.7
 ### Changed
 - Extended Solidity support to v0.8.18
