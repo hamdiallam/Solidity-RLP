@@ -115,6 +115,8 @@ library RLPReader {
             memPtr = memPtr + dataLen;
         }
 
+        require(memPtr - item.memPtr == item.len);
+
         return result;
     }
 
